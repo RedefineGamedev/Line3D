@@ -1,0 +1,37 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type spatial;
+render_mode unshaded;
+
+uniform vec4 albedo : hint_color;
+uniform sampler2D texture_albedo : hint_albedo;
+uniform sampler2D gradient;
+uniform float tint_power;
+uniform float gradient_power;
+
+void fragment() {	
+	vec4 input_color = texture(texture_albedo, UV);
+	vec4 gradient_color = texture(gradient, UV);
+	
+	if (gradient_power > 0.0) {
+		ALBEDO.rgb = mix(input_color.rgb, gradient_color.rgb, gradient_power);
+		
+		if (gradient_color.a == 0.0) {
+			ALPHA = gradient_color.a;
+		}
+		else {
+			ALPHA = input_color.a * gradient_color.a;
+		}
+	}
+	else if (tint_power > 0.0) {
+		ALBEDO.rgb = mix(input_color.rgb, albedo.rgb, tint_power);	
+		ALPHA = input_color.a;
+	}
+	else {
+		ALBEDO.rgb = input_color.rgb;
+		ALPHA = input_color.a;
+	}
+	
+	
+}"
