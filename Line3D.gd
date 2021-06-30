@@ -3,33 +3,33 @@ extends ImmediateGeometry
 
 export var points = [Vector3(0,0,0), Vector3(5,0,0)]
 export var width : float = 1
-export var widthCurve : Curve
+export var width_curve : Curve
 
-export var globalCoords : bool = false
-export(int, "None", "Tile", "Stretch") var textureMode = 2
+export var global_coords : bool = false
+export(int, "None", "Tile", "Stretch") var texture_mode = 2
 export var texture : Texture
-export var tintColorPower : float = 0.5
-export var tintColor : Color = Color.white
+export var color_mix_power : float = 0.5
+export var default_color : Color = Color.white
 export var gradient : GradientTexture
 
 var camera : Camera
-var cameraOrigin : Vector3
+var camera_origin : Vector3
 
 func _ready():
 	material_override = preload("res://addons/Line3D/Line3D_material.tres")
 
 func _process(delta):
 	if gradient == null:
-		material_override.set("shader_param/tint_power", tintColorPower)
+		material_override.set("shader_param/tint_power", color_mix_power)
 		material_override.set("shader_param/gradient_power", 0)
 	else:
 		material_override.set("shader_param/tint_power", 0)
-		material_override.set("shader_param/gradient_power", tintColorPower)
+		material_override.set("shader_param/gradient_power", color_mix_power)
 		
-	if textureMode == 0:
+	if texture_mode == 0:
 		material_override.set("shader_param/tint_power", 1)
 	
-	material_override.set("shader_param/albedo", tintColor)
+	material_override.set("shader_param/albedo", default_color)
 	material_override.set("shader_param/gradient", gradient)	
 	material_override.set("shader_param/texture_albedo", texture)
 	
@@ -40,81 +40,72 @@ func _process(delta):
 		
 	camera = get_viewport().get_camera()
 	if camera == null:
-		cameraOrigin = Vector3.UP	
+		camera_origin = Vector3.UP	
 	else:
-		cameraOrigin = to_local(camera.get_global_transform().origin)
+		camera_origin = to_local(camera.get_global_transform().origin)
 	
-	var uvProgressStep : float = 1.0 / (points.size() - 1)
-	var uvProgress : float = 0
+	var uv_progress_step : float = 1.0 / (points.size() - 1)
+	var uv_progress : float = 0
 	
-	var progressStep : float = 1.0 / points.size()
+	var progress_step : float = 1.0 / points.size()
 	var progress : float = 0
 	
 	clear()
 	begin(Mesh.PRIMITIVE_TRIANGLES)
 	
 	for i in range(points.size() - 1):
-		var thicknessSegmentStart : float = width
-		var thicknessSegmentEnd : float = width
-		var pointA : Vector3 = points[i]
-		var pointB : Vector3 = points[i+1]
+		var thickness_segment_start : float = width
+		var thickness_segment_end : float = width
+		var point_a : Vector3 = points[i]
+		var point_b : Vector3 = points[i+1]
 		
-		if widthCurve != null:
-			thicknessSegmentStart = widthCurve.interpolate(progress)
-			thicknessSegmentEnd = widthCurve.interpolate(progress + progressStep)
+		if width_curve != null:
+			thickness_segment_start = width_curve.interpolate(progress)
+			thickness_segment_end = width_curve.interpolate(progress + progress_step)
 		
-		if globalCoords:
-			pointA = to_local(pointA)
-			pointB = to_local(pointB)
+		if global_coords:
+			point_a = to_local(point_a)
+			point_b = to_local(point_b)
 	
-		var pointAB : Vector3 = pointB - pointA
-		var orth : Vector3 = (cameraOrigin - ((pointA + pointB) / 2)).cross(pointAB).normalized()
-		var orthogonalABStart : Vector3 = orth * thicknessSegmentStart
-		var orthogonalABEnd : Vector3 = orth * thicknessSegmentEnd
+		var point_ab : Vector3 = point_b - point_a
+		var orth : Vector3 = (camera_origin - ((point_a + point_b) / 2)).cross(point_ab).normalized()
+		var orthogonal_ab_start : Vector3 = orth * thickness_segment_start
+		var orthogonal_ab_end : Vector3 = orth * thickness_segment_end
 		
-		var AtoABStart : Vector3 = pointA + orthogonalABStart
-		var AfromABStart : Vector3 = pointA - orthogonalABStart
-		var BtoABEnd : Vector3 = pointB + orthogonalABEnd
-		var BfromABEnd : Vector3 = pointB - orthogonalABEnd
+		var a_to_ab_start : Vector3 = point_a + orthogonal_ab_start
+		var a_from_ab_start : Vector3 = point_a - orthogonal_ab_start
+		var b_to_ab_end : Vector3 = point_b + orthogonal_ab_end
+		var b_from_ab_end : Vector3 = point_b - orthogonal_ab_end
 
-		match textureMode:
+		match texture_mode:
 			Line2D.LINE_TEXTURE_NONE:
-				draw_stretch(AtoABStart, AfromABStart, BtoABEnd, BfromABEnd, 
-							uvProgress, uvProgressStep)
+				draw_stretch(a_to_ab_start, a_from_ab_start, b_to_ab_end, b_from_ab_end, 
+							uv_progress, uv_progress_step)
 			Line2D.LINE_TEXTURE_STRETCH:
-				draw_stretch(AtoABStart, AfromABStart, BtoABEnd, BfromABEnd, 
-							uvProgress, uvProgressStep)
+				draw_stretch(a_to_ab_start, a_from_ab_start, b_to_ab_end, b_from_ab_end, 
+							uv_progress, uv_progress_step)
 			Line2D.LINE_TEXTURE_TILE:
-				var ABLen = pointAB.length()
-				var ABFloor = floor(ABLen)
-				var ABFrac = ABLen - ABFloor
+				var ab_len = point_ab.length()
+				var ab_floor = floor(ab_len)
+				var ab_frac = ab_len - ab_floor
 				
-				set_uv(Vector2(ABFloor, 0))
-				add_vertex(AtoABStart)
-				set_uv(Vector2(-ABFrac, 0))
-				add_vertex(BtoABEnd)
-				set_uv(Vector2(ABFloor, 1))
-				add_vertex(AfromABStart)
-				set_uv(Vector2(-ABFrac, 0))
-				add_vertex(BtoABEnd)
-				set_uv(Vector2(-ABFrac, 1))
-				add_vertex(BfromABEnd)
-				set_uv(Vector2(ABFloor, 1))
-				add_vertex(AfromABStart)
+				set_uv(Vector2(ab_floor, 0))
+				add_vertex(a_to_ab_start)
+				set_uv(Vector2(-ab_frac, 0))
+				add_vertex(b_to_ab_end)
+				set_uv(Vector2(ab_floor, 1))
+				add_vertex(a_from_ab_start)
+				set_uv(Vector2(-ab_frac, 0))
+				add_vertex(b_to_ab_end)
+				set_uv(Vector2(-ab_frac, 1))
+				add_vertex(b_from_ab_end)
+				set_uv(Vector2(ab_floor, 1))
+				add_vertex(a_from_ab_start)
 		
-		uvProgress += uvProgressStep
-		progress += progressStep
+		uv_progress += uv_progress_step
+		progress += progress_step
 		
-	end()
-	
-	var psize = 3
-	
-	var p1 = 0
-	var p2 = 1
-	
-	var uvProgressStep2 : float = 1.0 / (psize)
-	var uvProgress2 : float = 0
-	
+	end()	
 		
 func draw_stretch(a_to_ab_start:Vector3, a_from_ab_start:Vector3, 
 				b_to_ab_end:Vector3, b_from_ab_end:Vector3, 
@@ -147,7 +138,6 @@ func add_point(position : Vector3, at_position : int = -1):
 		points.append(position)
 	else:
 		points.insert(at_position, position)
-	yield(get_tree(), "idle_frame")
 		
 func remove_point(i : int):
 	if points.size() > i:
