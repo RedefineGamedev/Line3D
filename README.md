@@ -1,7 +1,7 @@
 
 
 # Line3D
-Line3D support for Godot Engine
+Line3D support for Godot Engine. Part of [Godot 3D Hub](https://redefinegamedev.com/blog/godot-3d-hub/).
 
 # Features
 
