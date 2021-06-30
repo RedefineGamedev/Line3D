@@ -45,4 +45,5 @@ In order for the Line3D to display correctly, you must have a Camera node in the
 # Inspiration
 
 [Line Renderer from dbp8890](https://github.com/dbp8890/line-renderer)
+
 [Line3D from jegor377](https://github.com/jegor377/Line3D)
