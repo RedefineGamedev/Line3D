@@ -23,13 +23,17 @@ This project aims to map 1:1 with the [Line2D](https://docs.godotengine.org/en/s
 - No line joins
 - Might not be reliable if used dynamically
 
-# How to Use
+# How to Install
 
  1. Clone or download the zip from the repository
  2. Create an **addons** folder in your Godot Project
  3. Put the folder Line3D in the addons folder (its contents should be the files from the repo)
  4. Go in Project / Project Settings / Plugins
  5. Enable the plugin (if you don't see it, restart the engine)
+
+# How to Use
+
+After installing the plugin, you can create a new node called Line3D. It has similar features to Line2D.
 
 # How to Contribute
 
