@@ -1,6 +1,6 @@
 tool
 extends Path
-class_name Line3D, "line_3d.png"
+class_name Line3D, "Line3D-gd3.svg"
 
 export var curve_points:PoolVector3Array setget set_points, get_points
 export var width : float = 0.1 setget set_width
