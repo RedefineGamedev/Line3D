@@ -4,9 +4,9 @@ extends MeshInstance
 export var uv_scale: Vector2 = Vector2(4.0,1.0)
 
 onready var line3D = get_parent()
-onready var camera = get_viewport().get_camera()
+var camera
 
-var custom_line_material = preload("res://addons/Line3D/Line3D_spatial_material.tres")
+var custom_line_material = preload("res://addons/line_3d/Line3D_spatial_material.tres")
 
 func _ready():
 	update()
@@ -14,13 +14,14 @@ func _ready():
 func update():
 	if line3D == null:
 		line3D = get_parent()
+
 	if camera == null:
-		camera = get_viewport().get_camera()
+		camera = get_viewport().get_camera()		
 		
 	update_shader()
 	draw()
 #	print('DRAW')
-	
+
 
 func update_shader():
 	if line3D.custom_material != null:
@@ -60,6 +61,7 @@ func draw():
 	var count: int = cross_section.get_point_count()
 	var up = Vector3(1, 0, 0)
 
+	var camera_pos = to_local(camera.global_transform.origin)
 	for i in range(steps + 1):
 		var current_offset: float = i * offset
 		var position_on_curve: Vector3 = curve.interpolate_baked(current_offset)
@@ -76,11 +78,12 @@ func draw():
 			taper_size = line3D.width_curve.interpolate_baked(float(i) / float(steps))
 		var node = Spatial.new()
 
-		if camera:
-			var cam_dir = (camera.transform.origin - position_on_curve).normalized()
-			node.look_at_from_position(position_on_curve, position_2, cam_dir)
+		if camera and line3D.flat_direction == 0:
+			var cam_dir = (camera_pos - position_on_curve).normalized()
+			node.look_at_from_position(position_on_curve, position_2, Vector3.UP)
+			node.rotate_object_local(Vector3(0,0,1), Vector3.UP.angle_to(cam_dir))
 		else:
-			node.look_at_from_position(position_on_curve, position_2, Vector3(0,1,0))
+			node.look_at_from_position(position_on_curve, position_2, line3D.custom_flat_direction)
 		up = node.transform.basis.y
 		
 		for j in range(count):
@@ -119,7 +122,10 @@ func draw():
 						surface_tool.add_uv(Vector2(
 							current_offset / length * 1, 
 							j / float(count-1) * 1 * wrap))
-					
+			if line3D.global_coords:
+				pos = to_local(pos)
+			else:
+				pos -= transform.origin
 			surface_tool.add_vertex(pos)
 
 		if i > 0:
