@@ -27,7 +27,7 @@ func update_shader():
 	if line3D.custom_material != null:
 		material_override = line3D.custom_material
 	else:
-		material_override = custom_line_material
+		material_override = custom_line_material.duplicate()
 		material_override.set('albedo_texture', line3D.texture)
 	
 
@@ -61,7 +61,10 @@ func draw():
 	var count: int = cross_section.get_point_count()
 	var up = Vector3(1, 0, 0)
 
-	var camera_pos = to_local(camera.global_transform.origin)
+	var camera_pos = null
+	if camera:
+		camera_pos = to_local(camera.global_transform.origin)
+		
 	for i in range(steps + 1):
 		var current_offset: float = i * offset
 		var position_on_curve: Vector3 = curve.interpolate_baked(current_offset)
@@ -122,6 +125,18 @@ func draw():
 						surface_tool.add_uv(Vector2(
 							current_offset / length * 1, 
 							j / float(count-1) * 1 * wrap))
+				3:
+					if line3D.texture != null:
+						var taper_wrap = PI
+						if line3D.flat:
+							taper_wrap = 2
+						surface_tool.add_uv(Vector2(
+							current_offset / taper_size / taper_wrap, 
+							j / float(count-1) * 1 * wrap * 2))
+					else:
+						surface_tool.add_uv(Vector2(
+							current_offset / length * 1, 
+							j / float(count-1) * 1 * wrap * 2))
 			if line3D.global_coords:
 				pos = to_local(pos)
 			else:

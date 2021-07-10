@@ -1,23 +1,28 @@
 tool
 extends Path
-class_name Line3D, "Line3D-gd3.svg"
 
 export var curve_points:PoolVector3Array setget set_points, get_points
 export var width : float = 0.1 setget set_width
 export var width_curve : Curve setget set_width_curve
 
-export var global_coords : bool = false setget set_global_coords
-export var texture : Texture setget set_texture
-export(int, "None", "Tile", "Stretch") var texture_mode = 2 setget set_texture_mode
+
 export var default_color : Color = Color.white setget set_default_color
 export var gradient : GradientTexture setget set_gradient
+
+export var texture : Texture setget set_texture
+export(int, "None", "Tile", "Stretch", "Double Sided Tile") var texture_mode = 2 setget set_texture_mode
+
 export var flat : bool = false setget set_flat
 export(int, "Follow Main Camera", "Custom") var flat_direction = 0 setget set_flat_direction
 export var custom_flat_direction := Vector3(0,1,0) setget set_custom_flat_direction
 export var resolution : float = 1.0 setget set_resolution
 export var cross_section_resolution : int = 10 setget set_cross_section_resolution
 export var smooth : bool = false setget set_smooth
+
 export var generate_collision_mesh := false setget set_generate_collision_mesh
+export(int, "Convex", "Concave") var collision_mesh_type
+
+export var global_coords : bool = false setget set_global_coords
 
 export var custom_material: Material setget set_material
 
@@ -41,16 +46,23 @@ func reload_geometry():
 	geometry.set_script(geometry_script)
 	
 	if new:
-		geometry.connect('script_changed', self, 'update')
+#		if Engine.editor_hint:
+#			geometry.connect('script_changed', self, 'update')
 		add_child(geometry)
 
 func _ready() -> void:
 	connect('curve_changed', self, 'update')
-	connect('script_changed', self, 'update')
+#	if Engine.editor_hint:
+#		connect('script_changed', self, 'update')
 	update()
 	
 	if generate_collision_mesh and geometry != null and geometry.get_node_or_null('GeometryMeshInstance_col') == null:
-		geometry.create_trimesh_collision()
+		if collision_mesh_type == 0:
+			geometry.create_multiple_convex_collisions()
+		else:
+			geometry.create_trimesh_collision()
+		if not global_coords:
+			geometry.get_node('GeometryMeshInstance_col').transform.origin = -transform.origin
 	
 func update():
 	if geometry == null:
@@ -73,7 +85,8 @@ func set_width_curve(v):
 	
 func set_global_coords(v):
 	global_coords = v
-	set_notify_transform(global_coords)
+	if Engine.editor_hint:
+		set_notify_transform(global_coords)
 	update()
 
 

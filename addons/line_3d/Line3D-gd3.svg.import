@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Line3D-gd3.svg-1e77d1cc37736d3f64baf882b29426f8.stex"
+path="res://.import/Line3D-gd3.svg-97542ba8cfda4c8cd614b19f2974dd77.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/Line3D_/addons/line_3d/Line3D-gd3.svg"
-dest_files=[ "res://.import/Line3D-gd3.svg-1e77d1cc37736d3f64baf882b29426f8.stex" ]
+source_file="res://addons/line_3d/Line3D-gd3.svg"
+dest_files=[ "res://.import/Line3D-gd3.svg-97542ba8cfda4c8cd614b19f2974dd77.stex" ]
 
 [params]
 
