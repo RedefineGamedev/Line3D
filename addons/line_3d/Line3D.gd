@@ -16,7 +16,7 @@ var camera : Camera
 var camera_origin : Vector3
 
 func _ready():
-	material_override = preload("res://addons/Line3D/Line3D_material.tres")
+	material_override = preload("res://addons/line_3d/Line3D_material.tres")
 
 func _process(delta):
 	if gradient == null:
